@@ -1,0 +1,62 @@
+ np
+
+player_stats = pd.read_csv("player_stats.csv")
+awards_data = pd.read_csv("awards_data.csv")
+
+
+draftList = []
+
+#Take out players drafted before 2007 season
+for x, y in player_stats['draftyear'].items():
+    if y >= 2007:
+        nbaPersonId = int(player_stats.loc[x, 'nbapersonid'])
+        draftList.append((nbaPersonId))
+
+
+playerList = [] #Player list for ALL-NBA selections
+first_all_nba_season = {}  #Array for ALL-NBA season and nbapersonid
+
+#Loop thru ID in draftList to find if they made ALL-NBA
+for nbaPersonId in draftList:
+
+    all_nba = awards_data[awards_data['nbapersonid'] == nbaPersonId]
+
+
+    made_all_nba = all_nba[(all_nba['All NBA First Team'] >= 1) |
+                           (all_nba['All NBA Second Team'] >= 1) |
+                           (all_nba['All NBA Third Team'] >= 1)]
+
+    # If true, Find first season they made All-NBA
+    if len(made_all_nba) > 0:
+        earliest_season = made_all_nba['season'].min()
+        first_all_nba_season[nbaPersonId] = earliest_season
+
+        playerList.append(made_all_nba)
+
+#New array for draft year for each ID
+player_draft_years = {}
+
+#Find draft year for each All NBA players
+for nbaPersonId in first_all_nba_season:
+
+    player_info = player_stats[player_stats['nbapersonid'] == nbaPersonId]
+
+    # Find first value draft year
+
+    draft_year = player_info['draftyear'].values[0]
+    player_draft_years[nbaPersonId] = draft_year
+
+
+years = {} #Each amount of years for draft to ALL-NBA
+
+# Loop through the player IDs in first_all_nba_season
+for nbaPersonId in first_all_nba_season:
+        earliest_all_nba_season = first_all_nba_season[nbaPersonId]
+        draft_year = player_draft_years[nbaPersonId]
+
+        #Mean for all differences
+        year_difference = earliest_all_nba_season - draft_year
+        years[nbaPersonId] = year_difference
+        mean = np.mean(list(years.values()))
+
+print(mean)
