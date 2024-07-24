@@ -1,0 +1,135 @@
+import pandas as pd
+import numpy as np
+
+# Load awards data
+awards = pd.read_csv("awards_data.csv")
+
+# Initialize an empty list
+id_season_list = []
+
+# Find players who are All-NBA First Team and add to list
+for index, x in awards['All NBA First Team'].items():
+    if x >= 1:
+        iD = int(awards.loc[index, 'nbapersonid'])
+        season = awards.loc[index, 'season']  #Find corresponding season of All_NBA_Selection
+        id_season_list.append((iD, season))
+
+# Load player stats
+player_stats = pd.read_csv("player_stats.csv")
+
+# Initialize an empty list for PPG
+ppg_list = []
+
+# Loop through ID and Season to find the same ID in stats to find PPG
+for iD, season in id_season_list:
+    player_data = player_stats[(player_stats['nbapersonid'] == iD) & (player_stats['season'] == season)]
+
+    total_points = player_data['points'].sum()
+    total_games = player_data['games'].sum()
+
+    if total_games > 0:
+        ppg = total_points / total_games
+        ppg_list.append(ppg)  # Append to list
+
+# Calculate and display the average PPG
+if len(ppg_list) > 0:
+    avg_ppg = np.mean(ppg_list)
+    print(avg_ppg)
+
+#Second team
+# Initialize an empty list
+id_season_list2 = []
+
+# Find players who are All-NBA First Team and add to list
+for index, x in awards['All NBA Second Team'].items():
+    if x >= 1:
+        iD = int(awards.loc[index, 'nbapersonid'])
+        season = awards.loc[index, 'season']  #Find corresponding season of All_NBA_Selection
+        id_season_list2.append((iD, season))
+
+
+
+# Initialize an empty list for PPG
+ppg_list2 = []
+
+# Loop through ID and Season to find the same ID in stats to find PPG
+for iD, season in id_season_list2:
+    player_data = player_stats[(player_stats['nbapersonid'] == iD) & (player_stats['season'] == season)]
+
+    total_points = player_data['points'].sum()
+    total_games = player_data['games'].sum()
+
+    if total_games > 0:
+        ppg = total_points / total_games
+        ppg_list2.append(ppg)  # Append to list
+
+# Calculate and display the average PPG
+if len(ppg_list2) > 0:
+    avg_ppg = np.mean(ppg_list2)
+    print(avg_ppg)
+
+#Third Team
+# Initialize an empty list
+id_season_list3 = []
+
+# Find players who are All-NBA Third Team and add to list
+for index, x in awards['All NBA Third Team'].items():
+    if x >= 1:
+        iD = int(awards.loc[index, 'nbapersonid'])
+        season = awards.loc[index, 'season']  #Find corresponding season of All_NBA_Selection
+        id_season_list3.append((iD, season))
+
+
+
+# Initialize an empty list for PPG
+ppg_list3 = []
+
+# Loop through ID and Season to find the same ID in stats to find PPG
+for iD, season in id_season_list3:
+    player_data = player_stats[(player_stats['nbapersonid'] == iD) & (player_stats['season'] == season)]
+
+    total_points = player_data['points'].sum()
+    total_games = player_data['games'].sum()
+
+    if total_games > 0:
+        ppg = total_points / total_games
+        ppg_list3.append(ppg)  # Append to list
+
+# Calculate and display the average PPG
+if len(ppg_list3) > 0:
+    avg_ppg = np.mean(ppg_list3)
+    print(avg_ppg)
+
+#All star game
+# Initialize an empty list
+id_season_list4 = []
+
+# Find players who are All-NBA First Team and add to list
+for index, x in awards['all_star_game'].items():
+    if x >= 1:
+        iD = int(awards.loc[index, 'nbapersonid'])
+        season = awards.loc[index, 'season']  #Find corresponding season of All_NBA_Selection
+        id_season_list4.append((iD, season))
+
+# Load player stats
+player_stats = pd.read_csv("player_stats.csv")
+
+# Initialize an empty list for PPG
+ppg_list4 = []
+
+# Loop through ID and Season to find the same ID in stats to find PPG
+for iD, season in id_season_list4:
+    player_data = player_stats[(player_stats['nbapersonid'] == iD) & (player_stats['season'] == season)]
+
+    total_points = player_data['points'].sum()
+    total_games = player_data['games'].sum()
+
+    if total_games > 0:
+        ppg = total_points / total_games
+        ppg_list4.append(ppg)  # Append to list
+
+# Calculate and display the average PPG
+if len(ppg_list4) > 0:
+    avg_ppg = np.mean(ppg_list4)
+    print(avg_ppg)
+
