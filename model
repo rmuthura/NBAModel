@@ -1,0 +1,101 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+
+
+# Read the data
+player_stats = pd.read_csv("player_stats.csv")
+awards_data = pd.read_csv("awards_data.csv")
+
+# Merge data
+data = pd.merge(player_stats, awards_data, on='nbapersonid', how='left')
+
+# Sort and limit to first 4 seasons
+data.sort_values(by=['nbapersonid','season_x'], inplace=True)
+first_four_seasons_data = data.groupby('nbapersonid').head(4).copy()
+
+# Function to determine career outcome
+def determine_career_outcome(player_stats):
+    countNBA = ((player_stats['All NBA First Team'] >= 1) |
+                (player_stats['All NBA Second Team'] >= 1) |
+                (player_stats['All NBA Third Team'] >= 1)).sum()
+    if countNBA >= 2:
+        return 'Elite'
+    elif (player_stats['all_star_game'] >= 1).sum() >= 2:
+        return 'All Star'
+    elif ((player_stats['games_start'] >= 41) | (player_stats['mins'] >= 2000)).sum() >= 2:
+        return 'Starter'
+    elif (player_stats['mins'] >= 1000).sum() >= 2:
+        return 'Rotation'
+    elif (player_stats['mins'] >= 1).sum() >= 2:
+        return 'Roster'
+    else:
+        return 'Out of League'
+
+# Determine the career outcomes
+# Initialize an empty list
+career_outcomes = []
+
+# Group the player statistics and awards by each player's unique ID
+grouped_player_stats = first_four_seasons_data.groupby('nbapersonid')
+grouped_awards = awards_data.groupby('nbapersonid')
+
+# Loop through each unique player ID to determine career outcomes
+for player_id in grouped_player_stats.groups:
+    # Get stats from each player
+    individual_player_stats = grouped_player_stats.get_group(player_id)
+
+    # Check if the current player has any awards
+    has_awards = player_id in grouped_awards.groups
+    individual_player_awards = grouped_awards.get_group(player_id) if has_awards else pd.DataFrame()
+
+    # Use the determine_career_outcome function to get the career outcome for this player
+    career_classification = determine_career_outcome(individual_player_stats)
+
+    # Add the career outcome to the career_outcomes list for each record of the current player
+    career_outcomes.extend([career_classification] * len(individual_player_stats))
+
+
+
+
+# Add the outcomes to the DataFrame containing only the first four seasons
+first_four_seasons_data.loc[:, 'career_outcome'] = career_outcomes
+
+# Filter data by draft year if needed
+train_data = first_four_seasons_data[first_four_seasons_data['draftyear'] <= 2015]
+
+# Create feature matrix X and target vector y
+feature_columns = ['mins','points','fga','fgm','steals','ftm','def_reb']
+
+
+X = train_data[feature_columns]
+y = train_data['career_outcome']
+X.fillna(0, inplace=True)
+# Train-test split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create and train model
+clf = RandomForestClassifier(n_estimators=50, random_state=42)
+clf.fit(X_train, y_train)
+
+# Predict
+y_pred = clf.predict(X_test)
+
+#Find accuracy
+print("Accuracy:", accuracy_score(y_test, y_pred))
+feature_importances = clf.feature_importances_
+indices = np.argsort(feature_importances)
+#Plot data
+plt.title('Feature Importances')
+plt.barh(range(len(indices)), feature_importances[indices], color='b', align='center')
+plt.yticks(range(len(indices)), [feature_columns[i] for i in indices])
+plt.xlabel('Relative Importance')
+plt.show()
+#Find important features
+importances = clf.feature_importances_
+feature_importance = pd.DataFrame({"Feature": feature_columns, "Importance": importances})
+feature_importance = feature_importance.sort_values("Importance", ascending=False)
+print(feature_importance)
